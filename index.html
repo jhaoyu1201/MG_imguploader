@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Monstro Garden — 圖片上傳工具</title>
+<style>
+:root{--bg:#0f1117;--bg2:#161b27;--bg3:#1e2a3e;--card:#1a2234;--card2:#232f45;--text:#e8eaf6;--text2:#8892b0;--text3:#4a5568;--teal:#00d4b8;--gold:#ffd700;--red:#ff4757;--green:#4ecb71;--orange:#ff6b35;--purple:#8b5cf6;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:16px;padding-bottom:40px;}
+h1{font-size:1.4rem;color:var(--teal);margin-bottom:2px;}
+.subtitle{font-size:.78rem;color:var(--text2);margin-bottom:18px;}
+.card{background:var(--card);border-radius:14px;padding:16px;border:1.5px solid var(--card2);margin-bottom:14px;}
+.card-title{font-weight:800;font-size:.92rem;margin-bottom:12px;color:var(--text);display:flex;align-items:center;gap:8px;}
+label{font-size:.73rem;font-weight:700;color:var(--text2);display:block;margin-bottom:4px;}
+input[type=text],input[type=password],input[type=number]{width:100%;padding:10px 12px;background:var(--bg3);border:1.5px solid var(--card2);border-radius:10px;color:var(--text);font-size:.9rem;outline:none;-webkit-appearance:none;}
+input:focus{border-color:var(--teal);}
+.token-row{display:flex;gap:8px;}
+.token-row input{flex:1;}
+.toggle-btn{padding:10px 14px;background:var(--card2);border:1.5px solid var(--card2);border-radius:10px;color:var(--text2);cursor:pointer;font-size:.85rem;}
+.btn{width:100%;padding:13px;border-radius:12px;border:none;font-size:.95rem;font-weight:800;cursor:pointer;transition:all .15s;font-family:inherit;}
+.btn-primary{background:linear-gradient(135deg,var(--teal),#4a9eff);color:#fff;}
+.btn-primary:active{transform:scale(.97);}
+.btn-primary:disabled{opacity:.4;pointer-events:none;}
+.btn-secondary{background:var(--card2);color:var(--text);}
+.btn-sm{padding:8px 14px;border-radius:10px;font-size:.78rem;width:auto;}
+.info-box{background:var(--bg3);border-radius:8px;padding:10px 12px;font-size:.76rem;color:var(--text2);line-height:1.7;border-left:3px solid var(--teal);margin-bottom:12px;}
+.info-box.warn{border-color:var(--orange);}
+
+/* ID row */
+.id-row{display:flex;align-items:stretch;gap:12px;}
+#monster-id{width:110px;font-size:1.5rem;font-weight:900;text-align:center;padding:10px;color:var(--teal);flex-shrink:0;}
+.id-preview{flex:1;background:var(--bg3);border-radius:10px;padding:10px 12px;font-family:monospace;font-size:.68rem;color:var(--text2);line-height:1.9;overflow-y:auto;max-height:130px;}
+
+/* Section label */
+.sec-lbl{font-size:.7rem;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin:16px 0 8px;display:flex;align-items:center;gap:8px;}
+.sec-lbl::after{content:'';flex:1;height:1px;background:var(--card2);}
+
+/* Slots */
+.slots-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.slot{background:var(--bg3);border-radius:12px;border:1.5px solid var(--card2);overflow:hidden;position:relative;transition:border-color .2s;}
+.slot.has-file{border-color:var(--teal);}
+.slot.done{border-color:var(--green);}
+.slot.error{border-color:var(--red);}
+.slot.uploading{border-color:var(--gold);}
+.slot-header{padding:7px 10px;background:rgba(0,0,0,.25);display:flex;align-items:center;justify-content:space-between;}
+.slot-name{font-size:.72rem;font-weight:800;}
+.badge{font-size:.58rem;padding:2px 7px;border-radius:8px;font-weight:800;}
+.b-req{background:#1a2a1a;color:var(--green);}
+.b-opt{background:#2a2a1a;color:var(--text3);}
+.b-shiny{background:#2a1a3a;color:var(--purple);}
+.slot-body{padding:10px;display:flex;flex-direction:column;align-items:center;gap:7px;}
+.slot-ph{width:100%;aspect-ratio:1;border-radius:8px;background:rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:var(--text3);}
+.slot-img{width:100%;aspect-ratio:1;border-radius:8px;background:#111;object-fit:contain;display:none;}
+.slot-img.show{display:block;}
+.slot-fname{font-family:monospace;font-size:.6rem;color:var(--teal);background:rgba(0,212,184,.08);padding:3px 6px;border-radius:5px;width:100%;text-align:center;word-break:break-all;}
+.slot-st{font-size:.64rem;font-weight:700;text-align:center;}
+.st-empty{color:var(--text3);}
+.st-ready{color:var(--teal);}
+.st-uploading{color:var(--gold);}
+.st-done{color:var(--green);}
+.st-error{color:var(--red);}
+.slot-pick{width:100%;padding:7px;border-radius:8px;border:1.5px dashed var(--card2);background:transparent;color:var(--text2);font-size:.73rem;cursor:pointer;font-family:inherit;}
+.slot.has-file .slot-pick{border-color:var(--teal);color:var(--teal);}
+.slot-file-input{display:none;}
+.rm-btn{position:absolute;top:4px;right:4px;width:18px;height:18px;background:var(--red);border:none;border-radius:50%;color:#fff;font-size:.6rem;cursor:pointer;display:none;align-items:center;justify-content:center;line-height:1;}
+.slot.has-file .rm-btn{display:flex;}
+
+/* Summary */
+.sum-bar{display:flex;gap:8px;margin-bottom:12px;}
+.sum-item{flex:1;background:var(--bg3);border-radius:10px;padding:8px;text-align:center;}
+.sum-num{font-size:1.2rem;font-weight:900;}
+.sum-lbl{font-size:.63rem;color:var(--text2);margin-top:1px;}
+
+/* Progress */
+.prog-wrap{display:none;margin-bottom:12px;}
+.prog-wrap.show{display:block;}
+.prog-bg{height:10px;background:rgba(255,255,255,.1);border-radius:5px;overflow:hidden;}
+.prog-bar{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--teal),#4a9eff);transition:width .3s;}
+.prog-txt{font-size:.74rem;color:var(--text2);margin-top:4px;text-align:center;}
+
+/* Log */
+.log-row{font-size:.73rem;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04);display:flex;gap:8px;font-family:monospace;}
+.log-row:last-child{border-bottom:none;}
+
+#token-status{font-size:.72rem;margin-top:6px;text-align:center;}
+
+#toast{position:fixed;top:16px;right:16px;left:16px;z-index:999;display:flex;flex-direction:column;gap:6px;pointer-events:none;}
+.notif{background:var(--bg2);border-radius:10px;padding:10px 14px;font-size:.82rem;font-weight:700;animation:ni .2s ease;border-left:4px solid var(--teal);}
+.notif.warn{border-color:var(--orange);}
+.notif.success{border-color:var(--green);}
+.notif.danger{border-color:var(--red);}
+@keyframes ni{from{transform:translateY(-8px);opacity:0}to{transform:translateY(0);opacity:1}}
+</style>
+</head>
+<body>
+
+<h1>🌿 MG 圖片上傳工具</h1>
+<p class="subtitle">Monstro Garden — 怪物圖片上傳到 GitHub</p>
+
+<!-- Token -->
+<div class="card">
+  <div class="card-title">🔑 存取設定</div>
+  <div class="info-box warn">Token 僅存於本機瀏覽器 localStorage，不會傳給任何第三方。</div>
+  <label>GitHub Personal Access Token</label>
+  <div class="token-row">
+    <input type="password" id="token-input" placeholder="github_pat_...">
+    <button class="toggle-btn" onclick="toggleToken()">👁</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:8px;">
+    <button class="btn btn-primary btn-sm" style="flex:1;" onclick="saveToken()">儲存</button>
+    <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="clearToken()">清除</button>
+  </div>
+  <div id="token-status"></div>
+</div>
+
+<!-- 怪物編號 -->
+<div class="card">
+  <div class="card-title">🐾 怪物編號</div>
+  <label>輸入怪物 ID（數字）</label>
+  <div class="id-row">
+    <input type="number" id="monster-id" min="0" max="999" value="10" oninput="onIdChange()">
+    <div class="id-preview" id="id-preview"></div>
+  </div>
+</div>
+
+<!-- 圖片槽 -->
+<div class="card">
+  <div class="card-title">🖼️ 選擇圖片</div>
+  <div class="info-box">點擊每個槽位選擇對應圖片。空槽位會自動跳過。</div>
+
+  <div class="sec-lbl">一般造型</div>
+  <div class="slots-grid" id="slots-normal"></div>
+
+  <div class="sec-lbl" style="margin-top:18px;">✨ 色違造型</div>
+  <div class="slots-grid" id="slots-shiny"></div>
+</div>
+
+<!-- 上傳 -->
+<div class="card">
+  <div class="card-title">☁️ 上傳到 GitHub</div>
+  <div class="sum-bar">
+    <div class="sum-item"><div class="sum-num" id="sn-ready" style="color:var(--teal)">0</div><div class="sum-lbl">已選擇</div></div>
+    <div class="sum-item"><div class="sum-num" id="sn-done" style="color:var(--green)">0</div><div class="sum-lbl">已完成</div></div>
+    <div class="sum-item"><div class="sum-num" id="sn-error" style="color:var(--red)">0</div><div class="sum-lbl">失敗</div></div>
+  </div>
+  <div class="prog-wrap" id="prog-wrap">
+    <div class="prog-bg"><div class="prog-bar" id="prog-bar" style="width:0%"></div></div>
+    <div class="prog-txt" id="prog-txt">準備中...</div>
+  </div>
+  <button class="btn btn-primary" id="upload-btn" onclick="startUpload()" disabled>☁️ 開始上傳</button>
+  <button class="btn btn-secondary" style="margin-top:8px;" onclick="clearAll()">🗑️ 清除全部圖片</button>
+</div>
+
+<!-- Log -->
+<div class="card" id="log-card" style="display:none;">
+  <div class="card-title">📋 上傳記錄</div>
+  <div id="log-body" style="max-height:220px;overflow-y:auto;"></div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const OWNER='jhaoyu1201', REPO='MonstroGarden', BRANCH='main', FOLDER='assets/monsters';
+
+const NORMAL_SLOTS=[
+  {key:'idle',   label:'待機圖',  badge:'b-req',   badgeTxt:'建議有'},
+  {key:'blink',  label:'閉眼圖',  badge:'b-opt',   badgeTxt:'選填'},
+  {key:'attack', label:'攻擊圖',  badge:'b-opt',   badgeTxt:'選填'},
+  {key:'hurt',   label:'受傷圖',  badge:'b-opt',   badgeTxt:'選填'},
+];
+const SHINY_SLOTS=[
+  {key:'idle_shiny',  label:'色違圖 1', badge:'b-shiny', badgeTxt:'色違'},
+  {key:'idle_shiny2', label:'色違圖 2', badge:'b-shiny', badgeTxt:'色違'},
+  {key:'idle_shiny3', label:'色違圖 3', badge:'b-shiny', badgeTxt:'色違'},
+];
+const ALL_SLOTS=[...NORMAL_SLOTS,...SHINY_SLOTS];
+
+let slotFiles={};
+let isUploading=false;
+
+function getMonId(){
+  const v=document.getElementById('monster-id').value;
+  return String(parseInt(v)||0).padStart(2,'0');
+}
+function getFilename(key){ return `mon_${getMonId()}_${key}.png`; }
+
+function onIdChange(){
+  updateIdPreview();
+  ALL_SLOTS.forEach(s=>{
+    const el=document.getElementById('fn-'+s.key);
+    if(el) el.textContent=getFilename(s.key);
+  });
+}
+
+function updateIdPreview(){
+  document.getElementById('id-preview').textContent=
+    ALL_SLOTS.map(s=>getFilename(s.key)).join('\n');
+}
+
+function buildSlots(){
+  buildGroup('slots-normal',NORMAL_SLOTS);
+  buildGroup('slots-shiny',SHINY_SLOTS);
+}
+
+function buildGroup(cid,slots){
+  const c=document.getElementById(cid);
+  c.innerHTML='';
+  slots.forEach(s=>{
+    const d=document.createElement('div');
+    d.className='slot'; d.id='slot-'+s.key;
+    d.innerHTML=`
+      <div class="slot-header">
+        <span class="slot-name">${s.label}</span>
+        <span class="badge ${s.badge}">${s.badgeTxt}</span>
+      </div>
+      <div class="slot-body">
+        <div class="slot-ph" id="ph-${s.key}">📷</div>
+        <img class="slot-img" id="img-${s.key}" src="" alt="">
+        <div class="slot-fname" id="fn-${s.key}">${getFilename(s.key)}</div>
+        <div class="slot-st st-empty" id="st-${s.key}">尚未選擇</div>
+        <button class="slot-pick" onclick="pickFile('${s.key}')">選擇圖片</button>
+        <input class="slot-file-input" type="file" id="fi-${s.key}" accept="image/*" onchange="onFile(event,'${s.key}')">
+      </div>
+      <button class="rm-btn" onclick="clearSlot('${s.key}')">✕</button>`;
+    c.appendChild(d);
+  });
+}
+
+function pickFile(key){ document.getElementById('fi-'+key).click(); }
+
+function onFile(e,key){
+  const file=e.target.files[0]; if(!file) return;
+  if(slotFiles[key]) URL.revokeObjectURL(slotFiles[key].url);
+  const url=URL.createObjectURL(file);
+  slotFiles[key]={file,url};
+  const slot=document.getElementById('slot-'+key);
+  slot.classList.add('has-file');
+  document.getElementById('ph-'+key).style.display='none';
+  const img=document.getElementById('img-'+key);
+  img.src=url; img.classList.add('show');
+  setSt(key,'ready','已選擇，待上傳');
+  e.target.value='';
+  updateSummary(); updateBtn();
+}
+
+function clearSlot(key){
+  if(slotFiles[key]) URL.revokeObjectURL(slotFiles[key].url);
+  delete slotFiles[key];
+  const slot=document.getElementById('slot-'+key);
+  slot.className='slot';
+  document.getElementById('ph-'+key).style.display='';
+  const img=document.getElementById('img-'+key);
+  img.src=''; img.classList.remove('show');
+  setSt(key,'empty','尚未選擇');
+  updateSummary(); updateBtn();
+}
+
+function clearAll(){
+  ALL_SLOTS.forEach(s=>{ if(slotFiles[s.key]) clearSlot(s.key); });
+  document.getElementById('log-card').style.display='none';
+  document.getElementById('prog-wrap').classList.remove('show');
+}
+
+function setSt(key,cls,txt){
+  const el=document.getElementById('st-'+key);
+  if(el){ el.className='slot-st st-'+cls; el.textContent=txt; }
+}
+
+function updateSummary(){
+  document.getElementById('sn-ready').textContent=Object.keys(slotFiles).length;
+  document.getElementById('sn-done').textContent=ALL_SLOTS.filter(s=>document.getElementById('slot-'+s.key)?.classList.contains('done')).length;
+  document.getElementById('sn-error').textContent=ALL_SLOTS.filter(s=>document.getElementById('slot-'+s.key)?.classList.contains('error')).length;
+}
+function updateBtn(){
+  document.getElementById('upload-btn').disabled=Object.keys(slotFiles).length===0||isUploading;
+}
+
+// Token
+function saveToken(){ const t=document.getElementById('token-input').value.trim(); if(!t){toast('請輸入 Token','warn');return;} localStorage.setItem('mg_gh_token',t); toast('✅ Token 已儲存','success'); updateTokSt(); }
+function clearToken(){ localStorage.removeItem('mg_gh_token'); document.getElementById('token-input').value=''; updateTokSt(); }
+function getToken(){ return localStorage.getItem('mg_gh_token')||''; }
+function toggleToken(){ const i=document.getElementById('token-input'); i.type=i.type==='password'?'text':'password'; }
+function updateTokSt(){ const t=getToken(),el=document.getElementById('token-status'); if(t){el.textContent='✅ Token 已設定（'+t.substring(0,14)+'...）';el.style.color='var(--green)';}else{el.textContent='⚠️ 尚未設定 Token';el.style.color='var(--orange)';} }
+
+// Upload
+async function startUpload(){
+  const token=getToken(); if(!token){toast('請先設定 Token！','warn');return;}
+  const pending=ALL_SLOTS.filter(s=>slotFiles[s.key]);
+  if(!pending.length){toast('請先選擇圖片','warn');return;}
+  isUploading=true; updateBtn();
+  document.getElementById('prog-wrap').classList.add('show');
+  document.getElementById('log-card').style.display='';
+  document.getElementById('log-body').innerHTML='';
+  let ok=0;
+  for(let i=0;i<pending.length;i++){
+    const s=pending[i], fname=getFilename(s.key), path=`${FOLDER}/${fname}`;
+    setProg(i,pending.length,'上傳中：'+fname);
+    setSt(s.key,'uploading','上傳中...');
+    document.getElementById('slot-'+s.key).classList.add('uploading');
+    try{
+      const b64=await toB64(slotFiles[s.key].file);
+      const sha=await getSHA(token,path);
+      await upload(token,path,b64,sha,fname);
+      setSt(s.key,'done','✅ 上傳成功');
+      const sl=document.getElementById('slot-'+s.key);
+      sl.className='slot done';
+      addLog('✅',fname,'var(--green)'); ok++;
+    }catch(e){
+      setSt(s.key,'error','❌ '+e.message);
+      document.getElementById('slot-'+s.key).className='slot error';
+      addLog('❌',fname+' — '+e.message,'var(--red)');
+    }
+    updateSummary();
+  }
+  setProg(pending.length,pending.length,`完成！${ok}/${pending.length} 張成功`);
+  isUploading=false; updateBtn();
+  toast(`☁️ 完成：${ok}/${pending.length} 張`,ok===pending.length?'success':'warn');
+}
+
+function toB64(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result.split(',')[1]); r.onerror=rej; r.readAsDataURL(file); }); }
+
+async function getSHA(token,path){
+  const r=await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(path)}?ref=${BRANCH}`,{headers:{Authorization:`token ${token}`,Accept:'application/vnd.github.v3+json'}});
+  if(r.status===404) return null;
+  const d=await r.json().catch(()=>null);
+  return d?.sha||null;
+}
+
+async function upload(token,path,content,sha,fname){
+  const body={message:`Upload ${fname} via MG Uploader`,content,branch:BRANCH};
+  if(sha) body.sha=sha;
+  const r=await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(path)}`,{method:'PUT',headers:{Authorization:`token ${token}`,Accept:'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok){ const e=await r.json().catch(()=>{}); throw new Error(e?.message||`HTTP ${r.status}`); }
+}
+
+function setProg(cur,tot,txt){ const p=tot>0?Math.round(cur/tot*100):0; document.getElementById('prog-bar').style.width=p+'%'; document.getElementById('prog-txt').textContent=txt; }
+function addLog(icon,txt,color){ const el=document.getElementById('log-body'); const d=document.createElement('div'); d.className='log-row'; d.innerHTML=`<span>${icon}</span><span style="color:${color}">${txt}</span>`; el.appendChild(d); el.scrollTop=el.scrollHeight; }
+
+function toast(msg,type=''){ const c=document.getElementById('toast'); const d=document.createElement('div'); d.className='notif'+(type?' '+type:''); d.textContent=msg; c.appendChild(d); setTimeout(()=>d.remove(),3200); }
+
+// Init
+(function(){ const t=getToken(); if(t) document.getElementById('token-input').value=t; updateTokSt(); buildSlots(); updateIdPreview(); })();
+</script>
+</body>
+</html>
