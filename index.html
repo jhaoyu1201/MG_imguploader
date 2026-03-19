@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Monstro Garden — 圖片上傳工具</title>
 <style>
-:root{--bg:#0f1117;--bg2:#161b27;--bg3:#1e2a3e;--card:#1a2234;--card2:#232f45;--text:#e8eaf6;--text2:#8892b0;--text3:#4a5568;--teal:#00d4b8;--gold:#ffd700;--red:#ff4757;--green:#4ecb71;--orange:#ff6b35;--purple:#8b5cf6;}
+:root{--bg:#0f1117;--bg2:#161b27;--bg3:#1e2a3e;--card:#1a2234;--card2:#232f45;--text:#e8eaf6;--text2:#8892b0;--text3:#4a5568;--teal:#00d4b8;--gold:#ffd700;--red:#ff4757;--green:#4ecb71;--orange:#ff6b35;--purple:#8b5cf6;--pink:#ff6b9d;}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{font-family:-apple-system,'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:16px;padding-bottom:40px;}
 h1{font-size:1.4rem;color:var(--teal);margin-bottom:2px;}
@@ -30,11 +30,14 @@ input:focus{border-color:var(--teal);}
 /* ID row */
 .id-row{display:flex;align-items:stretch;gap:12px;}
 #monster-id{width:110px;font-size:1.5rem;font-weight:900;text-align:center;padding:10px;color:var(--teal);flex-shrink:0;}
-.id-preview{flex:1;background:var(--bg3);border-radius:10px;padding:10px 12px;font-family:monospace;font-size:.68rem;color:var(--text2);line-height:1.9;overflow-y:auto;max-height:130px;}
+.id-preview{flex:1;background:var(--bg3);border-radius:10px;padding:10px 12px;font-family:monospace;font-size:.65rem;color:var(--text2);line-height:1.9;overflow-y:auto;max-height:160px;}
 
 /* Section label */
 .sec-lbl{font-size:.7rem;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin:16px 0 8px;display:flex;align-items:center;gap:8px;}
 .sec-lbl::after{content:'';flex:1;height:1px;background:var(--card2);}
+.sec-lbl.shiny1{color:var(--purple);}
+.sec-lbl.shiny2{color:var(--pink);}
+.sec-lbl.shiny3{color:var(--gold);}
 
 /* Slots */
 .slots-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
@@ -48,12 +51,14 @@ input:focus{border-color:var(--teal);}
 .badge{font-size:.58rem;padding:2px 7px;border-radius:8px;font-weight:800;}
 .b-req{background:#1a2a1a;color:var(--green);}
 .b-opt{background:#2a2a1a;color:var(--text3);}
-.b-shiny{background:#2a1a3a;color:var(--purple);}
+.b-s1{background:#2a1a3a;color:var(--purple);}
+.b-s2{background:#3a1a2a;color:var(--pink);}
+.b-s3{background:#3a3a1a;color:var(--gold);}
 .slot-body{padding:10px;display:flex;flex-direction:column;align-items:center;gap:7px;}
 .slot-ph{width:100%;aspect-ratio:1;border-radius:8px;background:rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:var(--text3);}
 .slot-img{width:100%;aspect-ratio:1;border-radius:8px;background:#111;object-fit:contain;display:none;}
 .slot-img.show{display:block;}
-.slot-fname{font-family:monospace;font-size:.6rem;color:var(--teal);background:rgba(0,212,184,.08);padding:3px 6px;border-radius:5px;width:100%;text-align:center;word-break:break-all;}
+.slot-fname{font-family:monospace;font-size:.58rem;color:var(--teal);background:rgba(0,212,184,.08);padding:3px 6px;border-radius:5px;width:100%;text-align:center;word-break:break-all;}
 .slot-st{font-size:.64rem;font-weight:700;text-align:center;}
 .st-empty{color:var(--text3);}
 .st-ready{color:var(--teal);}
@@ -84,7 +89,6 @@ input:focus{border-color:var(--teal);}
 .log-row:last-child{border-bottom:none;}
 
 #token-status{font-size:.72rem;margin-top:6px;text-align:center;}
-
 #toast{position:fixed;top:16px;right:16px;left:16px;z-index:999;display:flex;flex-direction:column;gap:6px;pointer-events:none;}
 .notif{background:var(--bg2);border-radius:10px;padding:10px 14px;font-size:.82rem;font-weight:700;animation:ni .2s ease;border-left:4px solid var(--teal);}
 .notif.warn{border-color:var(--orange);}
@@ -132,8 +136,14 @@ input:focus{border-color:var(--teal);}
   <div class="sec-lbl">一般造型</div>
   <div class="slots-grid" id="slots-normal"></div>
 
-  <div class="sec-lbl" style="margin-top:18px;">✨ 色違造型</div>
-  <div class="slots-grid" id="slots-shiny"></div>
+  <div class="sec-lbl shiny1">✨ 色違 1</div>
+  <div class="slots-grid" id="slots-shiny1"></div>
+
+  <div class="sec-lbl shiny2">✨ 色違 2 <span style="font-size:.65rem;color:var(--text3);font-weight:400;text-transform:none;">(Admin 色違數量 ≥ 2)</span></div>
+  <div class="slots-grid" id="slots-shiny2"></div>
+
+  <div class="sec-lbl shiny3">✨ 色違 3 <span style="font-size:.65rem;color:var(--text3);font-weight:400;text-transform:none;">(Admin 色違數量 ≥ 3)</span></div>
+  <div class="slots-grid" id="slots-shiny3"></div>
 </div>
 
 <!-- 上傳 -->
@@ -164,24 +174,36 @@ input:focus{border-color:var(--teal);}
 const OWNER='jhaoyu1201', REPO='MonstroGarden', BRANCH='main', FOLDER='assets/monsters';
 
 const NORMAL_SLOTS=[
-  {key:'idle',   label:'待機圖',  badge:'b-req',   badgeTxt:'建議有'},
-  {key:'blink',  label:'閉眼圖',  badge:'b-opt',   badgeTxt:'選填'},
-  {key:'attack', label:'攻擊圖',  badge:'b-opt',   badgeTxt:'選填'},
-  {key:'hurt',   label:'受傷圖',  badge:'b-opt',   badgeTxt:'選填'},
+  {key:'idle',   label:'待機圖',  badge:'b-req', badgeTxt:'建議有'},
+  {key:'blink',  label:'閉眼圖',  badge:'b-opt', badgeTxt:'選填'},
+  {key:'attack', label:'攻擊圖',  badge:'b-opt', badgeTxt:'選填'},
+  {key:'hurt',   label:'受傷圖',  badge:'b-opt', badgeTxt:'選填'},
 ];
-const SHINY_SLOTS=[
-  {key:'idle_shiny',  label:'色違圖 1', badge:'b-shiny', badgeTxt:'色違'},
-  {key:'idle_shiny2', label:'色違圖 2', badge:'b-shiny', badgeTxt:'色違'},
-  {key:'idle_shiny3', label:'色違圖 3', badge:'b-shiny', badgeTxt:'色違'},
+const SHINY1_SLOTS=[
+  {key:'idle_shiny',   label:'色違1 待機', badge:'b-s1', badgeTxt:'色違1'},
+  {key:'blink_shiny',  label:'色違1 閉眼', badge:'b-s1', badgeTxt:'色違1'},
+  {key:'attack_shiny', label:'色違1 攻擊', badge:'b-s1', badgeTxt:'色違1'},
+  {key:'hurt_shiny',   label:'色違1 受傷', badge:'b-s1', badgeTxt:'色違1'},
 ];
-const ALL_SLOTS=[...NORMAL_SLOTS,...SHINY_SLOTS];
+const SHINY2_SLOTS=[
+  {key:'idle_shiny2',   label:'色違2 待機', badge:'b-s2', badgeTxt:'色違2'},
+  {key:'blink_shiny2',  label:'色違2 閉眼', badge:'b-s2', badgeTxt:'色違2'},
+  {key:'attack_shiny2', label:'色違2 攻擊', badge:'b-s2', badgeTxt:'色違2'},
+  {key:'hurt_shiny2',   label:'色違2 受傷', badge:'b-s2', badgeTxt:'色違2'},
+];
+const SHINY3_SLOTS=[
+  {key:'idle_shiny3',   label:'色違3 待機', badge:'b-s3', badgeTxt:'色違3'},
+  {key:'blink_shiny3',  label:'色違3 閉眼', badge:'b-s3', badgeTxt:'色違3'},
+  {key:'attack_shiny3', label:'色違3 攻擊', badge:'b-s3', badgeTxt:'色違3'},
+  {key:'hurt_shiny3',   label:'色違3 受傷', badge:'b-s3', badgeTxt:'色違3'},
+];
+const ALL_SLOTS=[...NORMAL_SLOTS,...SHINY1_SLOTS,...SHINY2_SLOTS,...SHINY3_SLOTS];
 
 let slotFiles={};
 let isUploading=false;
 
 function getMonId(){
-  const v=document.getElementById('monster-id').value;
-  return String(parseInt(v)||0).padStart(2,'0');
+  return String(parseInt(document.getElementById('monster-id').value)||0).padStart(2,'0');
 }
 function getFilename(key){ return `mon_${getMonId()}_${key}.png`; }
 
@@ -194,13 +216,22 @@ function onIdChange(){
 }
 
 function updateIdPreview(){
+  const id=getMonId();
+  const sections=[
+    ['一般造型', NORMAL_SLOTS],
+    ['色違1',    SHINY1_SLOTS],
+    ['色違2',    SHINY2_SLOTS],
+    ['色違3',    SHINY3_SLOTS],
+  ];
   document.getElementById('id-preview').textContent=
-    ALL_SLOTS.map(s=>getFilename(s.key)).join('\n');
+    sections.map(([lbl,slots])=>lbl+':\n'+slots.map(s=>`  mon_${id}_${s.key}.png`).join('\n')).join('\n');
 }
 
 function buildSlots(){
-  buildGroup('slots-normal',NORMAL_SLOTS);
-  buildGroup('slots-shiny',SHINY_SLOTS);
+  buildGroup('slots-normal', NORMAL_SLOTS);
+  buildGroup('slots-shiny1', SHINY1_SLOTS);
+  buildGroup('slots-shiny2', SHINY2_SLOTS);
+  buildGroup('slots-shiny3', SHINY3_SLOTS);
 }
 
 function buildGroup(cid,slots){
@@ -303,8 +334,7 @@ async function startUpload(){
       const sha=await getSHA(token,path);
       await upload(token,path,b64,sha,fname);
       setSt(s.key,'done','✅ 上傳成功');
-      const sl=document.getElementById('slot-'+s.key);
-      sl.className='slot done';
+      document.getElementById('slot-'+s.key).className='slot done';
       addLog('✅',fname,'var(--green)'); ok++;
     }catch(e){
       setSt(s.key,'error','❌ '+e.message);
@@ -336,10 +366,8 @@ async function upload(token,path,content,sha,fname){
 
 function setProg(cur,tot,txt){ const p=tot>0?Math.round(cur/tot*100):0; document.getElementById('prog-bar').style.width=p+'%'; document.getElementById('prog-txt').textContent=txt; }
 function addLog(icon,txt,color){ const el=document.getElementById('log-body'); const d=document.createElement('div'); d.className='log-row'; d.innerHTML=`<span>${icon}</span><span style="color:${color}">${txt}</span>`; el.appendChild(d); el.scrollTop=el.scrollHeight; }
-
 function toast(msg,type=''){ const c=document.getElementById('toast'); const d=document.createElement('div'); d.className='notif'+(type?' '+type:''); d.textContent=msg; c.appendChild(d); setTimeout(()=>d.remove(),3200); }
 
-// Init
 (function(){ const t=getToken(); if(t) document.getElementById('token-input').value=t; updateTokSt(); buildSlots(); updateIdPreview(); })();
 </script>
 </body>
